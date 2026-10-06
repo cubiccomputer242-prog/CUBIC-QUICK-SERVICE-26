@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>পরীক্ষার্থী বাস সার্ভিস – সিট বুকিং</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f6f1;--card:#fff;--ink:#17261d;--mut:#5d6b62;--pri:#0f6b4a;--pri2:#0a4d35;--acc:#f2b705;--bad:#c23b2e;--line:#dbe3dc}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Hind Siliguri',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:var(--pri2);color:#fff;position:sticky;top:0;z-index:5}
+.bar{max-width:1000px;margin:auto;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;gap:8px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:1.15rem}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+button,.btn{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:8px 14px;background:var(--pri);color:#fff;font-weight:600}
+button:hover{background:var(--pri2)}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--acc)}
+button.ghost{background:transparent;border:1px solid currentColor;color:inherit}
+button.sm{padding:4px 10px;font-size:.85rem}button.bad{background:var(--bad)}button.warn{background:var(--acc);color:#222}
+button:disabled{opacity:.5;cursor:not-allowed}
+.hero{background:var(--pri2);color:#fff;padding:36px 16px 48px}
+.hero div{max-width:1000px;margin:auto}
+.hero h1{font-size:clamp(1.6rem,5vw,2.6rem);margin:0 0 8px;line-height:1.25}
+.hero p{margin:0;max-width:560px;opacity:.9}
+main{max-width:1000px;margin:-24px auto 40px;padding:0 16px}
+h2{margin:28px 0 12px;font-size:1.3rem}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card h3{margin:0 0 4px;font-size:1.1rem}
+.meta{color:var(--mut);font-size:.92rem}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.chip{background:#e6efe8;border-radius:99px;padding:2px 10px;font-size:.82rem}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px}
+.price{font-weight:700;font-size:1.2rem;color:var(--pri)}
+.low{color:var(--bad);font-weight:600}
+input,select,textarea{font:inherit;width:100%;padding:9px 10px;border:1px solid #b9c6bc;border-radius:8px;background:#fff;margin:3px 0 10px}
+label{font-size:.9rem;font-weight:600}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:16px;z-index:10}
+.modal.on{display:flex}
+.sheet{background:#fff;border-radius:14px;max-width:520px;width:100%;padding:18px;margin:auto}
+.bus{display:grid;grid-template-columns:1fr 1fr 16px 1fr 1fr;gap:6px;background:#eef3ef;padding:12px;border-radius:12px;border:2px solid #c7d4ca;max-width:300px;margin:8px auto}
+.seat{padding:7px 0;background:#fff;color:var(--ink);border:1px solid #9fb2a4;font-size:.85rem}
+.seat:hover{background:#dff0e5}
+.seat.sel{background:var(--pri);color:#fff;border-color:var(--pri)}
+.seat.tk{background:#c9cfca;color:#888;border-color:#c9cfca;cursor:not-allowed}
+.legend{display:flex;gap:12px;justify-content:center;font-size:.8rem;color:var(--mut)}
+.pay{background:#fff8dc;border:1px dashed #d4b100;border-radius:8px;padding:8px 10px;font-size:.9rem;margin-bottom:10px}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tabs button{background:#e1eae3;color:var(--ink)}.tabs button.on{background:var(--pri);color:#fff}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:.9rem}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+.st{padding:1px 8px;border-radius:99px;font-size:.78rem;font-weight:600}
+.st.pending{background:#fff1c2}.st.confirmed{background:#cdeed8}.st.cancelled{background:#f5d0cc}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(80px);background:#222;color:#fff;padding:10px 18px;border-radius:99px;transition:.25s;z-index:20}
+#toast.on{transform:translateX(-50%)}
+.notice{background:#fde7e4;border:1px solid var(--bad);padding:10px 14px;border-radius:10px;margin-bottom:12px}
+.hide{display:none!important}
+@media(max-width:520px){.f2{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <div class="brand">🚌 পরীক্ষার্থী বাস সার্ভিস</div>
+  <nav>
+    <button class="ghost sm" onclick="location.hash='#trips'">ট্রিপসমূহ</button>
+    <button class="ghost sm" onclick="location.hash='#lookup'">আমার বুকিং</button>
+    <button class="ghost sm" id="navLogin">স্টাফ লগইন</button>
+    <button class="warn sm hide" id="navDash">ড্যাশবোর্ড</button>
+    <button class="ghost sm hide" id="navOut">লগআউট</button>
+  </nav>
+</div></header>
+
+<section class="hero"><div>
+  <h1>ভর্তি ও চাকরির পরীক্ষায় নিরাপদ যাতায়াত</h1>
+  <p>পরীক্ষার দিনের বাসের সিট এখনই বুক করুন। কোনো লগইন বা পাসওয়ার্ড লাগবে না — শুধু নাম ও মোবাইল নম্বর দিন।</p>
+</div></section>
+
+<main>
+  <div id="cfgWarn" class="notice hide">⚠️ Firebase কনফিগারেশন এখনো যোগ করা হয়নি। <code>index.html</code>-এর উপরের দিকে <code>CFG</code> অংশে আপনার কনফিগ বসান।</div>
+
+  <section id="trips"><h2>আসন্ন পরীক্ষার বাস</h2><div class="grid" id="tripList"><p class="meta">লোড হচ্ছে…</p></div></section>
+
+  <section id="lookup">
+    <h2>আমার বুকিং দেখুন</h2>
+    <div class="card" style="max-width:520px">
+      <div class="f2"><div><label>বুকিং কোড</label><input id="lkCode" placeholder="যেমন: A7K2PQ"></div>
+      <div><label>মোবাইল নম্বর</label><input id="lkPhone" inputmode="tel" placeholder="01XXXXXXXXX"></div></div>
+      <button id="lkBtn">খুঁজুন</button>
+      <div id="lkOut" style="margin-top:12px"></div>
+      <div id="lkSaved" class="meta"></div>
+    </div>
+  </section>
+
+  <section id="admin" class="hide">
+    <h2>ম্যানেজমেন্ট প্যানেল <span class="meta" id="whoami"></span></h2>
+    <div class="tabs" id="tabs"></div>
+    <div id="adminBody"></div>
+  </section>
+</main>
+
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<div id="toast"></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged,createUserWithEmailAndPassword} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,collection,doc,getDoc,setDoc,deleteDoc,updateDoc,onSnapshot,runTransaction,query,orderBy,arrayRemove,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ====== ১) এখানে আপনার Firebase কনফিগ বসান ====== */
+const CFG={apiKey:"YOUR_API_KEY",authDomain:"YOUR_PROJECT.firebaseapp.com",projectId:"YOUR_PROJECT",storageBucket:"YOUR_PROJECT.appspot.com",messagingSenderId:"000000000000",appId:"YOUR_APP_ID"};
+/* ====== ২) পেমেন্ট নম্বর (ম্যানুয়াল সেন্ড মানি) ====== */
+const PAY={bkash:"01XXXXXXXXX",nagad:"01XXXXXXXXX",rocket:"01XXXXXXXXX"};
+const PNAME={cash:"ক্যাশ (সরাসরি দোকানে)",bkash:"বিকাশ",nagad:"নগদ",rocket:"রকেট"};
+const SNAME={pending:"অপেক্ষমান",confirmed:"নিশ্চিত",cancelled:"বাতিল"};
+/* ================================================ */
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const toast=m=>{const t=$("#toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),3200)};
+const ok=CFG.apiKey!=="YOUR_API_KEY";
+if(!ok){$("#cfgWarn").classList.remove("hide");$("#tripList").innerHTML='<p class="meta">কনফিগারেশন যোগ করার পর ট্রিপ দেখা যাবে।</p>'}
+
+let app,auth,db,trips=[],bookings=[],staff=[],me=null,tab="bk",filter="all",unsubB,unsubU;
+if(ok){
+  app=initializeApp(CFG);auth=getAuth(app);db=getFirestore(app);
+  onSnapshot(query(collection(db,"trips"),orderBy("date")),s=>{trips=s.docs.map(d=>({id:d.id,...d.data()}));renderTrips();renderAdmin()},e=>toast("ট্রিপ লোড হয়নি: "+e.code));
+  onAuthStateChanged(auth,async u=>{
+    unsubB&&unsubB();unsubU&&unsubU();me=null;bookings=[];staff=[];
+    if(u){
+      const s=await getDoc(doc(db,"users",u.uid));
+      if(s.exists())me={uid:u.uid,email:u.email,...s.data()};
+      else{toast("এই অ্যাকাউন্টের কোনো অনুমতি নেই");signOut(auth)}
+    }
+    if(me){
+      unsubB=onSnapshot(query(collection(db,"bookings"),orderBy("createdAt","desc")),s=>{bookings=s.docs.map(d=>({id:d.id,...d.data()}));renderAdmin()});
+      if(me.role==="admin")unsubU=onSnapshot(collection(db,"users"),s=>{staff=s.docs.map(d=>({id:d.id,...d.data()}));renderAdmin()});
+    }
+    $("#navLogin").classList.toggle("hide",!!me);
+    $("#navDash").classList.toggle("hide",!me);
+    $("#navOut").classList.toggle("hide",!me);
+    $("#admin").classList.toggle("hide",!me);
+    renderAdmin();
+  });
+}
+
+/* ---------- ট্রিপ তালিকা ---------- */
+const left=t=>(t.totalSeats||40)-(t.taken||[]).length;
+function renderTrips(){
+  const el=$("#tripList");
+  if(!trips.length){el.innerHTML='<p class="meta">এখন কোনো ট্রিপ নেই। শীঘ্রই যোগ করা হবে।</p>';return}
+  el.innerHTML=trips.map(t=>`<div class="card">
+    <h3>${esc(t.title)}</h3>
+    <div class="meta">📅 ${esc(t.date)} · ⏰ ${esc(t.time)}</div>
+    <div class="meta">📍 যাত্রা শুরু: ${esc(t.from)}</div>
+    <div class="chips">${(t.stops||[]).map(s=>`<span class="chip">${esc(s)}</span>`).join("")}</div>
+    ${t.note?`<div class="meta">${esc(t.note)}</div>`:""}
+    <div class="row"><div><span class="price">৳${esc(t.price)}</span><div class="${left(t)<6?"low":"meta"}">${left(t)>0?left(t)+"টি সিট বাকি":"সিট শেষ"}</div></div>
+    <button data-book="${t.id}" ${left(t)<1?"disabled":""}>সিট বুক করুন</button></div></div>`).join("");
+  el.querySelectorAll("[data-book]").forEach(b=>b.onclick=()=>openBook(trips.find(t=>t.id===b.dataset.book),false));
+}
+
+/* ---------- বুকিং মডাল ---------- */
+const closeModal=()=>$("#modal").classList.remove("on");
+$("#modal").onclick=e=>{if(e.target.id==="modal")closeModal()};
+function openBook(t,manual){
+  let sel=[];
+  const n=t.totalSeats||40,taken=t.taken||[];
+  let seats="";
+  for(let i=1;i<=n;i++){seats+=`<button class="seat ${taken.includes(i)?"tk":""}" data-s="${i}" ${taken.includes(i)?"disabled":""}>${i}</button>`;if(i%4===2)seats+="<span></span>"}
+  $("#sheet").innerHTML=`<h3 style="margin:0">${esc(t.title)}</h3>
+  <div class="meta">${esc(t.date)} · ${esc(t.time)} · ৳${esc(t.price)}/সিট</div>
+  <div class="bus" id="bus">${seats}</div>
+  <div class="legend"><span>⬜ খালি</span><span>🟩 আপনার বাছাই</span><span>⬛ বুকড</span></div>
+  <p id="selInfo" class="meta" style="text-align:center">কোনো সিট বাছাই করা হয়নি</p>
+  <div class="f2"><div><label>নাম</label><input id="bName"></div><div><label>মোবাইল নম্বর</label><input id="bPhone" inputmode="tel" placeholder="01XXXXXXXXX"></div></div>
+  <label>কোথা থেকে উঠবেন</label>
+  <select id="bStop">${[t.from,...(t.stops||[])].filter(Boolean).map(s=>`<option>${esc(s)}</option>`).join("")}</select>
+  <label>পেমেন্ট পদ্ধতি</label>
+  <select id="bPay">${Object.keys(PNAME).map(k=>`<option value="${k}">${PNAME[k]}</option>`).join("")}</select>
+  <div id="payBox"></div>
+  <div class="row"><button class="ghost" style="color:var(--ink)" id="bCancel">বন্ধ করুন</button><button id="bSubmit">বুকিং নিশ্চিত করুন</button></div>`;
+  $("#modal").classList.add("on");
+  const upd=()=>{$("#selInfo").textContent=sel.length?`সিট: ${sel.join(", ")} · মোট ৳${sel.length*t.price}`:"কোনো সিট বাছাই করা হয়নি"};
+  $("#bus").onclick=e=>{const b=e.target.closest("[data-s]");if(!b||b.disabled)return;const s=+b.dataset.s;
+    sel=sel.includes(s)?sel.filter(x=>x!==s):[...sel,s].sort((a,b)=>a-b);b.classList.toggle("sel");upd()};
+  const pay=()=>{const m=$("#bPay").value;
+    $("#payBox").innerHTML=m==="cash"?'<div class="pay">দোকানে এসে টাকা দিয়ে সিট নিশ্চিত করুন।</div>':
+    `<div class="pay">${PNAME[m]} নম্বরে <b>${PAY[m]}</b> (Send Money) করে নিচে ট্রানজেকশন আইডি দিন।</div><label>ট্রানজেকশন আইডি (TrxID)</label><input id="bTrx">`};
+  $("#bPay").onchange=pay;pay();
+  $("#bCancel").onclick=closeModal;
+  $("#bSubmit").onclick=async()=>{
+    const name=$("#bName").value.trim(),phone=$("#bPhone").value.trim(),m=$("#bPay").value,trx=($("#bTrx")?.value||"").trim();
+    if(!sel.length)return toast("অন্তত একটি সিট বাছাই করুন");
+    if(!name)return toast("নাম লিখুন");
+    if(!/^01[3-9]\d{8}$/.test(phone))return toast("সঠিক মোবাইল নম্বর দিন (১১ ডিজিট)");
+    if(m!=="cash"&&!trx)return toast("ট্রানজেকশন আইডি দিন");
+    const code=Math.random().toString(36).slice(2,8).toUpperCase();
+    const btn=$("#bSubmit");btn.disabled=true;btn.textContent="অপেক্ষা করুন…";
+    try{
+      await runTransaction(db,async tx=>{
+        const r=doc(db,"trips",t.id),s=await tx.get(r),tk=s.data().taken||[];
+        if(sel.some(x=>tk.includes(x)))throw new Error("TAKEN");
+        tx.update(r,{taken:[...tk,...sel]});
+        tx.set(doc(db,"bookings",code),{tripId:t.id,tripTitle:t.title,tripDate:t.date,tripTime:t.time,seats:sel,name,phone,stop:$("#bStop").value,
+          payMethod:m,trxId:trx,amount:sel.length*t.price,status:manual&&me?"confirmed":"pending",source:manual&&me?"staff":"web",createdAt:serverTimestamp()});
+      });
+      const saved=JSON.parse(localStorage.getItem("myBookings")||"[]");saved.push({code,phone});localStorage.setItem("myBookings",JSON.stringify(saved));
+      $("#sheet").innerHTML=`<h3>✅ বুকিং সম্পন্ন!</h3><p>আপনার বুকিং কোড:</p><h1 style="letter-spacing:4px;color:var(--pri);margin:4px 0">${code}</h1>
+        <p>সিট: <b>${sel.join(", ")}</b><br>মোট: <b>৳${sel.length*t.price}</b><br>${m==="cash"?"দোকানে টাকা দিয়ে নিশ্চিত করুন।":"পেমেন্ট যাচাইয়ের পর স্টাফ নিশ্চিত করবেন।"}</p>
+        <p class="meta">কোডটি সংরক্ষণ করুন। “আমার বুকিং” অংশে কোড ও মোবাইল নম্বর দিয়ে দেখতে পারবেন।</p><button id="bDone">ঠিক আছে</button>`;
+      $("#bDone").onclick=()=>{closeModal();renderLookupSaved()};
+    }catch(e){
+      btn.disabled=false;btn.textContent="বুকিং নিশ্চিত করুন";
+      toast(e.message==="TAKEN"?"দুঃখিত, এই সিট এইমাত্র বুক হয়ে গেছে। অন্য সিট বাছুন।":"বুকিং হয়নি: "+e.code);
+      if(e.message==="TAKEN")closeModal();
+    }
+  };
+}
+
+/* ---------- আমার বুকিং ---------- */
+const bkHtml=b=>`<div class="card" style="margin-top:8px"><b>${esc(b.tripTitle)}</b> <span class="st ${b.status}">${SNAME[b.status]}</span>
+  <div class="meta">${esc(b.tripDate)} · ${esc(b.tripTime)}<br>নাম: ${esc(b.name)} · সিট: ${(b.seats||[]).join(", ")}<br>উঠবেন: ${esc(b.stop)}<br>৳${b.amount} · ${PNAME[b.payMethod]}</div></div>`;
+async function lookup(code,phone){
+  if(!ok)return;
+  try{
+    const s=await getDoc(doc(db,"bookings",code.trim().toUpperCase()));
+    if(!s.exists()||s.data().phone!==phone.trim())return $("#lkOut").innerHTML='<p class="low">কোড বা মোবাইল নম্বর মেলেনি।</p>';
+    $("#lkOut").innerHTML=bkHtml(s.data());
+  }catch(e){toast("খুঁজে পাওয়া যায়নি")}
+}
+$("#lkBtn").onclick=()=>lookup($("#lkCode").value,$("#lkPhone").value);
+function renderLookupSaved(){
+  const sv=JSON.parse(localStorage.getItem("myBookings")||"[]");
+  $("#lkSaved").innerHTML=sv.length?"এই ডিভাইসের বুকিং: "+sv.map(x=>`<button class="sm ghost" style="color:var(--pri)" data-c="${x.code}" data-p="${x.phone}">${x.code}</button>`).join(" "):"";
+  $("#lkSaved").querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>lookup(b.dataset.c,b.dataset.p));
+}
+renderLookupSaved();
+
+/* ---------- লগইন / লগআউট ---------- */
+$("#navLogin").onclick=()=>{
+  if(!ok)return toast("আগে Firebase কনফিগ যোগ করুন");
+  $("#sheet").innerHTML=`<h3>স্টাফ / অ্যাডমিন লগইন</h3><label>ইমেইল</label><input id="lEmail" type="email"><label>পাসওয়ার্ড</label><input id="lPass" type="password">
+  <div class="row"><button class="ghost" style="color:var(--ink)" id="lX">বন্ধ</button><button id="lGo">লগইন</button></div>`;
+  $("#modal").classList.add("on");$("#lX").onclick=closeModal;
+  $("#lGo").onclick=async()=>{try{await signInWithEmailAndPassword(auth,$("#lEmail").value.trim(),$("#lPass").value);closeModal();location.hash="#admin"}catch(e){toast("ইমেইল বা পাসওয়ার্ড ভুল")}};
+};
+$("#navOut").onclick=()=>signOut(auth);
+$("#navDash").onclick=()=>location.hash="#admin";
+
+/* ---------- অ্যাডমিন / স্টাফ প্যানেল ---------- */
+function renderAdmin(){
+  if(!me)return;
+  $("#whoami").textContent=`(${me.role==="admin"?"অ্যাডমিন":"কর্মচারী"}: ${me.email||""})`;
+  const T=[["bk","বুকিং"]];if(me.role==="admin")T.push(["trip","ট্রিপ ম্যানেজ"],["stf","কর্মচারী"]);
+  $("#tabs").innerHTML=T.map(([k,v])=>`<button data-t="${k}" class="${tab===k?"on":""}">${v}</button>`).join("");
+  $("#tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;renderAdmin()});
+  if(tab==="trip"&&me.role==="admin")return tripTab();
+  if(tab==="stf"&&me.role==="admin")return staffTab();
+  bookTab();
+}
+function bookTab(){
+  const list=bookings.filter(b=>filter==="all"||b.tripId===filter);
+  const sum=list.filter(b=>b.status!=="cancelled");
+  $("#adminBody").innerHTML=`<div class="row" style="margin:0 0 10px;flex-wrap:wrap">
+    <select id="fTrip" style="max-width:300px;margin:0"><option value="all">সব ট্রিপ</option>${trips.map(t=>`<option value="${t.id}" ${filter===t.id?"selected":""}>${esc(t.title)} (${esc(t.date)})</option>`).join("")}</select>
+    <button id="mBook" ${filter==="all"?"disabled":""}>+ স্টাফ বুকিং (বাছাই করা ট্রিপে)</button></div>
+    <p class="meta">মোট বুকিং: ${sum.length} · সিট: ${sum.reduce((a,b)=>a+(b.seats||[]).length,0)} · টাকা: ৳${sum.reduce((a,b)=>a+(+b.amount||0),0)}</p>
+    <div class="scroll"><table><tr><th>কোড</th><th>যাত্রী</th><th>ট্রিপ</th><th>সিট</th><th>উঠবে</th><th>পেমেন্ট</th><th>অবস্থা</th><th></th></tr>
+    ${list.map(b=>`<tr><td><b>${b.id}</b></td><td>${esc(b.name)}<br>${esc(b.phone)}</td><td>${esc(b.tripTitle)}<br>${esc(b.tripDate)}</td><td>${(b.seats||[]).join(", ")}</td><td>${esc(b.stop)}</td>
+    <td>${PNAME[b.payMethod]}<br>৳${b.amount}${b.trxId?`<br><small>${esc(b.trxId)}</small>`:""}</td><td><span class="st ${b.status}">${SNAME[b.status]}</span></td>
+    <td>${b.status==="pending"?`<button class="sm" data-ok="${b.id}">নিশ্চিত</button> `:""}${b.status!=="cancelled"?`<button class="sm bad" data-no="${b.id}">বাতিল</button>`:""}</td></tr>`).join("")||'<tr><td colspan="8">কোনো বুকিং নেই</td></tr>'}</table></div>`;
+  $("#fTrip").onchange=e=>{filter=e.target.value;bookTab()};
+  $("#mBook").onclick=()=>openBook(trips.find(t=>t.id===filter),true);
+  document.querySelectorAll("[data-ok]").forEach(b=>b.onclick=()=>updateDoc(doc(db,"bookings",b.dataset.ok),{status:"confirmed"}).then(()=>toast("নিশ্চিত করা হয়েছে")));
+  document.querySelectorAll("[data-no]").forEach(b=>b.onclick=async()=>{
+    const bk=bookings.find(x=>x.id===b.dataset.no);if(!confirm("বুকিং "+bk.id+" বাতিল করবেন? সিট খালি হয়ে যাবে।"))return;
+    await updateDoc(doc(db,"bookings",bk.id),{status:"cancelled"});
+    await updateDoc(doc(db,"trips",bk.tripId),{taken:arrayRemove(...bk.seats)});toast("বাতিল হয়েছে");
+  });
+}
+function tripTab(){
+  $("#adminBody").innerHTML=`<div class="card"><h3>নতুন ট্রিপ যোগ করুন</h3>
+    <label>পরীক্ষার নাম</label><input id="nTitle" placeholder="যেমন: রাজশাহী বিশ্ববিদ্যালয় ভর্তি পরীক্ষা (ইউনিট-ক)">
+    <div class="f2"><div><label>তারিখ</label><input id="nDate" type="date"></div><div><label>ছাড়ার সময়</label><input id="nTime" type="time"></div></div>
+    <label>যাত্রা শুরুর স্থান</label><input id="nFrom" placeholder="যেমন: ঢাকা, গাবতলী">
+    <label>বিরতি/স্টপেজ (কমা দিয়ে আলাদা করুন)</label><textarea id="nStops" rows="2" placeholder="আরিচা, বগুড়া, নাটোর"></textarea>
+    <div class="f2"><div><label>ভাড়া (৳ প্রতি সিট)</label><input id="nPrice" type="number"></div><div><label>মোট সিট</label><input id="nSeats" type="number" value="40"></div></div>
+    <label>নোট (ঐচ্ছিক)</label><input id="nNote" placeholder="বাসের ধরন, ফেরার সময় ইত্যাদি">
+    <button id="nAdd">ট্রিপ যোগ করুন</button></div>
+    <h2>বর্তমান ট্রিপ</h2><div class="scroll"><table><tr><th>পরীক্ষা</th><th>তারিখ</th><th>সিট</th><th></th></tr>
+    ${trips.map(t=>`<tr><td>${esc(t.title)}</td><td>${esc(t.date)} ${esc(t.time)}</td><td>${(t.taken||[]).length}/${t.totalSeats||40}</td><td><button class="sm bad" data-del="${t.id}">মুছুন</button></td></tr>`).join("")}</table></div>`;
+  $("#nAdd").onclick=async()=>{
+    const v=id=>$("#"+id).value.trim(),title=v("nTitle");
+    if(!title||!v("nDate")||!v("nTime")||!v("nFrom")||!v("nPrice"))return toast("সব তথ্য পূরণ করুন");
+    await setDoc(doc(collection(db,"trips")),{title,date:v("nDate"),time:v("nTime"),from:v("nFrom"),stops:v("nStops").split(/[,\n]/).map(s=>s.trim()).filter(Boolean),
+      price:+v("nPrice"),totalSeats:+v("nSeats")||40,note:v("nNote"),taken:[],createdAt:serverTimestamp()});
+    toast("ট্রিপ যোগ হয়েছে");
+  };
+  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>confirm("ট্রিপ মুছে ফেলবেন?")&&deleteDoc(doc(db,"trips",b.dataset.del)));
+}
+function staffTab(){
+  $("#adminBody").innerHTML=`<div class="card" style="max-width:460px"><h3>নতুন কর্মচারী/অ্যাডমিন যোগ করুন</h3>
+    <label>ইমেইল</label><input id="sMail" type="email"><label>পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)</label><input id="sPass" type="text">
+    <label>ভূমিকা</label><select id="sRole"><option value="staff">কর্মচারী</option><option value="admin">অ্যাডমিন</option></select>
+    <button id="sAdd">যোগ করুন</button></div>
+    <h2>বর্তমান তালিকা</h2><div class="scroll"><table><tr><th>ইমেইল</th><th>ভূমিকা</th><th></th></tr>
+    ${staff.map(s=>`<tr><td>${esc(s.email)}</td><td>${s.role==="admin"?"অ্যাডমিন":"কর্মচারী"}</td><td>${s.id!==me.uid?`<button class="sm bad" data-rm="${s.id}">সরান</button>`:""}</td></tr>`).join("")}</table></div>`;
+  $("#sAdd").onclick=async()=>{
+    const email=$("#sMail").value.trim(),pass=$("#sPass").value;
+    if(!email||pass.length<6)return toast("ইমেইল ও ৬+ অক্ষরের পাসওয়ার্ড দিন");
+    try{
+      const sec=initializeApp(CFG,"sec"+Date.now()),sa=getAuth(sec);
+      const c=await createUserWithEmailAndPassword(sa,email,pass);
+      await setDoc(doc(db,"users",c.user.uid),{email,role:$("#sRole").value});
+      await signOut(sa);toast("যোগ হয়েছে");
+    }catch(e){toast("ব্যর্থ: "+e.code)}
+  };
+  document.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>confirm("এই ব্যবহারকারীর অ্যাক্সেস সরাবেন?")&&deleteDoc(doc(db,"users",b.dataset.rm)));
+}
+</script>
+</body>
+</html>
